@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalTime;
 
+@Entity
 @AllArgsConstructor @NoArgsConstructor
 @Table(name = "Turno")
 public class Turno {

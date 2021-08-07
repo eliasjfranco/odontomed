@@ -6,20 +6,24 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDate;
 
+@Entity
 @AllArgsConstructor @NoArgsConstructor
 @Table(name = "Turno_Persona")
+@IdClass(value = TurnoPersonaPK.class)
 public class TurnoPersona {
 
     @Id
     @Column(name = "fecha")
     private LocalDate fecha;
 
-    //Crear relacion 1 a n con horario de turno.
+    @Id
     @ManyToOne(cascade = CascadeType.ALL)
     @Column(name = "id_horario")
     private Turno turno;
 
-    //Crear relacion n a 1 persona
+    @ManyToOne(cascade = CascadeType.ALL)
+    @Column(name = "dni_persona")
+    private Persona persona;
 
 
 

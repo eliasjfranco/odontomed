@@ -3,40 +3,27 @@ package com.odontomed.model;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
 
+@Entity
 @AllArgsConstructor @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "persona")
 public class User {
 
     @Id
     @Email
-    @Column(name = "email", length = 50)
-    private String email;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_email", referencedColumnName = "email")
+    private Persona persona;
 
-    @Column(name = "apellido", length = 30)
-    private String lastname;
-
-    @Column(name = "nombre", length = 30)
-    private String firstname;
-
-    @Column(name = "tel", length = 20)
-    private String tel;
-
-    @Column(name = "dni", length = 15)
-    private String dni;
-
-    @Column(name = "fecha_nacimiento")
-    private LocalDate fnac;
+    @Column(name = "password")
+    private String password;
 
     @Column(name = "deleted")
     private Boolean deleted = false;
 
-    @Column(name = "password")
-    private String password;
+
 
 }
