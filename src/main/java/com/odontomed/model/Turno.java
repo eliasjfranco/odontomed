@@ -5,10 +5,11 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor @NoArgsConstructor
-@Table(name = "Turno")
+@Table(name = "turno")
 public class Turno {
 
     @Id
@@ -18,4 +19,7 @@ public class Turno {
 
     @Column(name = "horario")
     private LocalTime hs;
+
+    @OneToMany(mappedBy = "turno")
+    private List<TurnoPersona> turnoPersona;
 }

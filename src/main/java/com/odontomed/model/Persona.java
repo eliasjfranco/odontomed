@@ -6,10 +6,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor @NoArgsConstructor
-@Table(name = "user")
+@Table(name = "persona")
 public class Persona {
 
     @Id
@@ -36,5 +37,5 @@ public class Persona {
     private User user;
 
     @OneToMany(mappedBy = "persona")
-    private TurnoPersona turnoPersona;
+    private List<TurnoPersona> turnoPersona;
 }
