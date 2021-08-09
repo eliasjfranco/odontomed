@@ -3,11 +3,14 @@ package com.odontomed.model;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
 @AllArgsConstructor @NoArgsConstructor
-public class TurnoPersonaPK {
+public class TurnoPersonaPK implements Serializable {
+
+    private final static long serialVersionUID = 1L;
 
     private LocalDate fecha;
 

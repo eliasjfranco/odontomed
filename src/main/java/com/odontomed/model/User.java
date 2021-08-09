@@ -5,15 +5,19 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
 @AllArgsConstructor @NoArgsConstructor
-@Table(name = "persona")
+@Table(name = "usuario")
 public class User {
 
     @Id
-    @Email
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private Long id;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_email", referencedColumnName = "email")
     private Persona persona;
