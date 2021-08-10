@@ -25,7 +25,15 @@ public class TurnoPersona {
     private Turno turno;
 
     @ManyToOne(cascade = CascadeType.ALL)
+<<<<<<< HEAD
     @JoinColumn(name = "dni_persona", referencedColumnName = "dni", nullable = false)
+=======
+<<<<<<< HEAD
+    @JoinColumn(name = "dni_persona", referencedColumnName = "dni", nullable = false)
+=======
+    @JoinColumn(name = "dni_persona", nullable = false)
+>>>>>>> 3094fd949cc2467fe38d888808499cfd1e4e5b53
+>>>>>>> develop/work
     private Persona persona;
 
 
