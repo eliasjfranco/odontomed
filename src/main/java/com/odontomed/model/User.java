@@ -4,9 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import java.io.Serializable;
-import java.time.LocalDate;
 
 @Entity
 @AllArgsConstructor @NoArgsConstructor
