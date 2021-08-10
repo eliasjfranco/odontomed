@@ -25,7 +25,7 @@ public class TurnoPersona {
     private Turno turno;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "dni_persona", nullable = false)
+    @JoinColumn(name = "dni_persona", referencedColumnName = "dni", nullable = false)
     private Persona persona;
 
 
