@@ -6,6 +6,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -22,9 +24,25 @@ public class User implements UserDetails {
     @Column(name = "user_id")
     private Long id;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_email", referencedColumnName = "email")
-    private Persona persona;
+    @Column(name = "nombre", length = 50, nullable = false)
+    private String firstname;
+
+    @Column(name = "apellido", length = 30, nullable = false)
+    private String lastname;
+
+    @Column(name = "tel", length = 30, nullable = false)
+    private String tel;
+
+    @Email
+    @Column(name = "email", length = 50, nullable = false)
+    private String email;
+
+    @Temporal(TemporalType.DATE)
+    @Column(name = "fecha_nacimiento", nullable = false)
+    private LocalDate fecha;
+
+    @Column(name = "dni", length = 15, nullable = false)
+    private String dni;
 
     @Column(name = "password")
     private String password;
@@ -34,6 +52,9 @@ public class User implements UserDetails {
 
     @ElementCollection(targetClass = GrantedAuthority.class)
     private Collection<? extends GrantedAuthority> authorities;
+
+    @OneToMany(mappedBy = "user")
+    private Set<TurnoPersona> turnoPersona;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
@@ -49,15 +70,18 @@ public class User implements UserDetails {
                 .stream()
                 .map(rol -> new SimpleGrantedAuthority(rol.getName()))
                 .collect(Collectors.toList());
-        return new org.springframework.security.core.userdetails.User(user.getPersona().getEmail(), user.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 
     @Builder
-    public User(Persona persona, String password, Boolean deleted, Collection<? extends GrantedAuthority> authorities, Set<Role> role) {
-        super();
-        this.persona = persona;
+    public User(String firstname, String lastname, String tel, String email, LocalDate fecha, String dni, String password, Collection<? extends GrantedAuthority> authorities, Set<Role> role) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.tel = tel;
+        this.email = email;
+        this.fecha = fecha;
+        this.dni = dni;
         this.password = password;
-        this.deleted = deleted;
         this.authorities = authorities;
         this.role = role;
     }
@@ -74,7 +98,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return getPersona().getEmail();
+        return email;
     }
 
     @Override

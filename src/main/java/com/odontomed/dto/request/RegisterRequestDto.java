@@ -1,8 +1,13 @@
 package com.odontomed.dto.request;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 
+@Getter @Setter @NoArgsConstructor
 public class RegisterRequestDto {
 
     @NotBlank(message = "El campo Nombres no puede estar vacío")
@@ -22,6 +27,9 @@ public class RegisterRequestDto {
 
     @NotBlank(message = "El campo Email no puede estar vacío")
     private String email;
+
+    @NotBlank(message = "El campo Password no puede estar vacío")
+    private String password;
 
 
 

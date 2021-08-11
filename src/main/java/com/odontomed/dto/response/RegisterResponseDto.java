@@ -2,7 +2,7 @@ package com.odontomed.dto.response;
 
 import java.time.LocalDate;
 
-public interface RegisterRespondeDto {
+public interface RegisterResponseDto {
 
     Long getId();
 
