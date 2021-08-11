@@ -4,11 +4,10 @@ import com.odontomed.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-<<<<<<< HEAD
 
-    User findByEmail(String email);
-=======
->>>>>>> 3094fd949cc2467fe38d888808499cfd1e4e5b53
+    Optional<User> findByEmail(String email);
 }

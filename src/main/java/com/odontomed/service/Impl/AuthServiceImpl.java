@@ -1,23 +1,33 @@
 package com.odontomed.service.Impl;
 
-<<<<<<< HEAD
+
+import com.odontomed.dto.response.RegisterRespondeDto;
 import com.odontomed.service.Interface.IAuth;
 
-public class AuthServiceImpl implements IAuth {
-=======
+
 import com.odontomed.model.User;
 import com.odontomed.repository.UserRepository;
-import com.odontomed.service.Interface.IAuth;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.data.projection.ProjectionFactory;
+
+import java.util.EmptyStackException;
+import java.util.Locale;
 
 public class AuthServiceImpl implements IAuth {
 
     @Autowired
+    MessageSource messageSource;
+    @Autowired
+    ProjectionFactory projectionFactory;
+
+    @Autowired
     UserRepository repository;
 
-    @Override
-    public User findByEmail(String email) {
-        return repository.findByEmail(email);
+    public RegisterRespondeDto save(User user){
+        if(repository.findByEmail(user.getPersona().getEmail()).isPresent()){
+            //throw new (messageSource.getMessage("El email ya se encuentra registrado", null, Locale.getDefault()));
+        }
+        return projectionFactory.createProjection(RegisterRespondeDto.class, repository.save(user));
     }
->>>>>>> develop/work
 }
