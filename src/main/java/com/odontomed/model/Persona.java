@@ -1,15 +1,19 @@
 package com.odontomed.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor @NoArgsConstructor
-@Table(name = "user")
+@Getter @Setter
+@Table(name = "persona")
 public class Persona {
 
     @Id
@@ -36,5 +40,5 @@ public class Persona {
     private User user;
 
     @OneToMany(mappedBy = "persona")
-    private TurnoPersona turnoPersona;
+    private List<TurnoPersona> turnoPersona;
 }
