@@ -2,6 +2,7 @@ package com.odontomed.service.Impl;
 
 
 import com.odontomed.dto.response.RegisterRespondeDto;
+import com.odontomed.exception.EmailAlreadyRegistered;
 import com.odontomed.service.Interface.IAuth;
 
 
@@ -26,7 +27,7 @@ public class AuthServiceImpl implements IAuth {
 
     public RegisterRespondeDto save(User user){
         if(repository.findByEmail(user.getPersona().getEmail()).isPresent()){
-            //throw new (messageSource.getMessage("El email ya se encuentra registrado", null, Locale.getDefault()));
+            throw new EmailAlreadyRegistered(messageSource.getMessage("user.error.email.registered", null, Locale.getDefault()));
         }
         return projectionFactory.createProjection(RegisterRespondeDto.class, repository.save(user));
     }

@@ -1,9 +1,6 @@
 package com.odontomed.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -45,7 +42,6 @@ public class User implements UserDetails {
                     name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(
                     name = "role_id", referencedColumnName = "id"))
-
     private Set<Role> role;
 
     public static UserDetails build(User user){
@@ -56,6 +52,15 @@ public class User implements UserDetails {
         return new org.springframework.security.core.userdetails.User(user.getPersona().getEmail(), user.getPassword(), authorities);
     }
 
+    @Builder
+    public User(Persona persona, String password, Boolean deleted, Collection<? extends GrantedAuthority> authorities, Set<Role> role) {
+        super();
+        this.persona = persona;
+        this.password = password;
+        this.deleted = deleted;
+        this.authorities = authorities;
+        this.role = role;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

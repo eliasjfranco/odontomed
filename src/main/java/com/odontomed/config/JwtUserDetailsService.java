@@ -1,6 +1,7 @@
 package com.odontomed.config;
 
 import com.odontomed.model.User;
+import com.odontomed.repository.UserRepository;
 import com.odontomed.service.Impl.AuthServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,7 +11,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public class JwtUserDetailsService implements UserDetailsService {
 
     @Autowired
-    AuthServiceImpl repository;
+    UserRepository repository;
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
