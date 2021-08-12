@@ -15,22 +15,22 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+@Service
 public class AuthServiceImpl implements IUser {
 
     @Autowired
     MessageSource messageSource;
     @Autowired
     ProjectionFactory projectionFactory;
-
     @Autowired
     PasswordEncoder passwordEncoder;
-
     @Autowired
     UserRepository repository;
     @Autowired

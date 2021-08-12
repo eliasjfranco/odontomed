@@ -21,7 +21,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "nombre", length = 50, nullable = false)
@@ -37,7 +37,6 @@ public class User implements UserDetails {
     @Column(name = "email", length = 50, nullable = false)
     private String email;
 
-    @Temporal(TemporalType.DATE)
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fecha;
 
