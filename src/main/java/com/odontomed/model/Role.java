@@ -20,8 +20,4 @@ public class Role {
     @Column(name = "nombre")
     private String name;
 
-
-
-    
-
 }

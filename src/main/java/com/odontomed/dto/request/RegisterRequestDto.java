@@ -1,10 +1,14 @@
 package com.odontomed.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Getter @Setter @NoArgsConstructor
@@ -16,8 +20,8 @@ public class RegisterRequestDto {
     @NotBlank(message = "El campo Apellido no puede estar vacío")
     private String lastname;
 
-    @NotBlank(message = "El campo Fecha de Nacimiento no puede estar vacío")
-    private LocalDate fecha;
+    @NotNull(message = "El campo Fecha de Nacimiento no puede estar vacío")
+    private String fecha;
 
     @NotBlank(message = "El campo Dni no puede estar vacío")
     private String dni;

@@ -1,5 +1,12 @@
 package com.odontomed.jwt;
 
+import java.io.IOException;
+import java.util.Locale;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.odontomed.service.Interface.IUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,48 +17,50 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Locale;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final static Logger logger = LoggerFactory.getLogger(JwtFilter.class);
     public static final String AUTHORIZATION = "Authorization";
-    public static final String BEARER = "Bearer";
+    public static final String BEARER = "Bearer ";
+
 
     @Autowired
     private MessageSource messageSource;
     @Autowired
     private JwtProvider jwtProvider;
     @Autowired
-    private IUser service;
+    private IUser iUserService;
+
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
         try {
             String token = getToken(request);
 
-            if(token != null && jwtProvider.validateToken(token)){
+            if (token != null && jwtProvider.validateToken(token)) {
+
                 String email = jwtProvider.getEmailFromToken(token);
 
-                UserDetails userDetails = service.loadUserByUsername(email);
-
+                UserDetails userDetails = iUserService.loadUserByUsername(email);
                 UsernamePasswordAuthenticationToken authenticationToken = jwtProvider.getAuthentication(token, userDetails);
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
-        }   catch (Exception e){
-            logger.error(messageSource.getMessage("jwt.error.method.doFilter.fail", null, Locale.getDefault()), e.getMessage());
+        } catch (Exception e) {
+            logger.error(messageSource.getMessage("jwt.error.method.doFilter.fail", null, Locale.getDefault()),
+                    e.getMessage());
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 
-    public String getToken(HttpServletRequest request){
+    public String getToken(HttpServletRequest request) {
+
         String header = request.getHeader(AUTHORIZATION);
-        if(header != null && header.startsWith(BEARER)){
+        if (header != null && header.startsWith(BEARER)) {
             return header.substring(7);
         }
         return null;
