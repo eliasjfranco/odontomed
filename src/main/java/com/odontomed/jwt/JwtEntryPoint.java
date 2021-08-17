@@ -34,4 +34,3 @@ public class JwtEntryPoint implements AuthenticationEntryPoint {
     }
 
 }
-
