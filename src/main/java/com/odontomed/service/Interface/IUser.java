@@ -19,7 +19,7 @@ public interface IUser  {
 
     String login(LoginRequestDto dto) throws NotRegisteredException;
 
-    RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered;
+    RegisterResponseDto saveUser(RegisterRequestDto dto) throws EmailAlreadyRegistered, IOException;
 
     /*UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
 

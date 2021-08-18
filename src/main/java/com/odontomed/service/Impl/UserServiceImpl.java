@@ -12,16 +12,15 @@ import com.odontomed.model.ERole;
 import com.odontomed.model.Role;
 import com.odontomed.model.User;
 import com.odontomed.model.UsuarioMain;
-import com.odontomed.repository.RoleRepository;
 import com.odontomed.repository.UserRepository;
 import com.odontomed.service.Interface.IUser;
+import com.odontomed.util.FormatDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -30,8 +29,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
@@ -54,6 +51,8 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     AuthenticationManager authenticationManager;
     @Autowired
     JwtProvider provider;
+    @Autowired
+    FormatDate formatDate;
 
     public static final String BEARER = "Bearer ";
 
@@ -70,23 +69,6 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         return UsuarioMain.build(user);
     }
 
-    /*@Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = repository.findByEmail(email);
-        if(user == null){
-            throw new UsernameNotFoundException(messageSource.getMessage("user.error.not.found", null, Locale.getDefault()));
-        }
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), getAuthority(user));
-    }
-
-    private Set<SimpleGrantedAuthority> getAuthority(User user){
-        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
-        user.getRole().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
-        });
-        return authorities;
-    }*/
-
     @Override
     public RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered {
         if(repository.findByEmail(dto.getEmail()).isPresent())
@@ -95,7 +77,7 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         user = dto.getUserFromDto();
         System.out.println(dto.getFecha());
         user.setPassword(encoder.encode(user.getPassword()));
-        user.setFecha(format(dto.getFecha()));
+        user.setFecha(formatDate.stringToDate(dto.getFecha()));
         System.out.println(user.getFecha());
 
         Set<Role> roleSet = new HashSet<>();
@@ -105,39 +87,6 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(user));
 
     }
-
-    /*@Override
-    public UserDetails loadUserByUsername(String email) {
-        User user = repository.findByEmail(email).orElseThrow(()
-                -> new UsernameNotFoundException(messageSource.getMessage("user.error.email.not.found",null,Locale.getDefault())));
-        return User.build(user);
-    }
-
-    public RegisterResponseDto createUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered {
-        if(repository.findByEmail(dto.getEmail()).isPresent()){
-            throw new EmailAlreadyRegistered(messageSource.getMessage("user.error.email.registered", null, Locale.getDefault()));
-        }
-
-        User user = User.builder()
-                .email(dto.getEmail())
-                .dni(dto.getDni())
-                .fecha(format(dto.getFecha()))
-                .lastname(dto.getLastname())
-                .firstname(dto.getFirstname())
-                .tel(dto.getTel())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .build();
-
-        Set<Role> roles = new HashSet<>();
-        roles.add(roleRepository.findByName(ERole.ROLE_USER.toString()));
-        user.setRole(roles);
-
-        User creation = repository.save(user);
-
-        //Crear servicio de envio de email de bienvenida.
-
-        return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(creation));
-    }*/
 
     @Override
     public String login(LoginRequestDto dto) {
@@ -153,12 +102,5 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         String token = provider.generateToken(authentication);
         return token;
 
-    }
-
-    public LocalDate format(String string){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MM-yyyy");
-        LocalDate date = LocalDate.parse(string, formatter);
-        formatter.format(date);
-        return date;
     }
 }

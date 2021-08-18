@@ -1,6 +1,7 @@
 package com.odontomed.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.odontomed.model.ERole;
 import com.odontomed.model.Role;
 
 import java.time.LocalDate;
@@ -16,11 +17,11 @@ public interface RegisterResponseDto {
     LocalDate getFecha();
     String getTel();
     String getEmail();
-    Set<Role> getRole();
+    Set<com.odontomed.model.Role> getRole();
 
     interface Role{
         Long getId();
-        String getName();
+        ERole getRolNombre();
     }
 
 

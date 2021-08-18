@@ -26,4 +26,6 @@ public class Role {
     public Role(ERole rolNombre) {
         this.rolNombre = rolNombre;
     }
+
+
 }

@@ -1,5 +1,6 @@
 package com.odontomed.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class Turno {
     @Column(name = "horario")
     private LocalTime hs;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "turno")
     private List<TurnoPersona> turnoPersona;
 }

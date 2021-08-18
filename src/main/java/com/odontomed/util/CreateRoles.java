@@ -8,9 +8,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CreateRoles { //implements CommandLineRunner {
+public class CreateRoles {}/* implements CommandLineRunner {
 
-    /*@Autowired
+    @Autowired
     RoleServiceImpl service;
 
     @Override
@@ -19,5 +19,5 @@ public class CreateRoles { //implements CommandLineRunner {
         Role roleUser = new Role(ERole.ROLE_USER);
         service.save(roleAdmin);
         service.save(roleUser);
-    }*/
-}
+    }
+}*/
