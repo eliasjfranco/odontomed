@@ -1,7 +1,7 @@
 package com.odontomed.security;
 
-import com.odontomed.jwt.JwtAuthenticationFilter;
 import com.odontomed.jwt.JwtEntryPoint;
+import com.odontomed.jwt.JwtTokenFilter;
 import com.odontomed.service.Impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +16,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -47,8 +46,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public JwtAuthenticationFilter authenticationFilterBean() throws Exception{
-        return new JwtAuthenticationFilter();
+    public JwtTokenFilter authenticationFilterBean() throws Exception{
+        return new JwtTokenFilter();
     }
 
     @Override
@@ -57,7 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/auth/**").permitAll()
                 .antMatchers("/turno").hasAnyRole("USER").and().authorizeRequests()
-                .anyRequest().authenticated().and().exceptionHandling().authenticationEntryPoint(jwtEntryPoint).and()
+                .anyRequest().authenticated().and().exceptionHandling().authenticationEntryPoint(jwtEntryPoint)
+                .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.addFilterBefore(authenticationFilterBean(), UsernamePasswordAuthenticationFilter.class);

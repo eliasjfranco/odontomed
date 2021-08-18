@@ -11,12 +11,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public interface IUser  {
 
-    RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered;
+    Optional<User> getByEmail(String email);
 
     String login(LoginRequestDto dto) throws NotRegisteredException;
+
+    RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered;
 
     /*UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
 

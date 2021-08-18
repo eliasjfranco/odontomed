@@ -6,10 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "role")
-@AllArgsConstructor @NoArgsConstructor
+@NoArgsConstructor
 @Getter @Setter
 public class Role {
 
@@ -17,7 +18,12 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @Column(name = "nombre")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    private ERole rolNombre;
 
+    public Role(ERole rolNombre) {
+        this.rolNombre = rolNombre;
+    }
 }

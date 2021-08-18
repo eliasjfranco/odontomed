@@ -7,10 +7,11 @@ import com.odontomed.dto.response.RegisterResponseDto;
 import com.odontomed.exception.EmailAlreadyRegistered;
 
 import com.odontomed.exception.NotRegisteredException;
-import com.odontomed.jwt.TokenProvider;
+import com.odontomed.jwt.JwtProvider;
 import com.odontomed.model.ERole;
 import com.odontomed.model.Role;
 import com.odontomed.model.User;
+import com.odontomed.model.UsuarioMain;
 import com.odontomed.repository.RoleRepository;
 import com.odontomed.repository.UserRepository;
 import com.odontomed.service.Interface.IUser;
@@ -26,19 +27,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class UserServiceImpl implements IUser, UserDetailsService {
+public class UserServiceImpl implements IUser, UserDetailsService{
 
     @Autowired
     MessageSource messageSource;
@@ -49,15 +47,28 @@ public class UserServiceImpl implements IUser, UserDetailsService {
     @Autowired
     UserRepository repository;
     @Autowired
-    RoleRepository roleRepository;
+    RoleServiceImpl roleService;
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
-    TokenProvider tokenProvider;
+    JwtProvider provider;
 
     public static final String BEARER = "Bearer ";
 
     @Override
+    public Optional<User> getByEmail(String email) {
+        return repository.findByEmail(email);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        User user = getByEmail(s).get();
+        if(user == null)
+            throw new UsernameNotFoundException(messageSource.getMessage("user.error.not.found",null, Locale.getDefault()));
+        return UsuarioMain.build(user);
+    }
+
+    /*@Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = repository.findByEmail(email);
         if(user == null){
@@ -72,17 +83,16 @@ public class UserServiceImpl implements IUser, UserDetailsService {
             authorities.add(new SimpleGrantedAuthority(role.getName()));
         });
         return authorities;
-    }
+    }*/
 
     @Override
     public RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered {
-        User user = repository.findByEmail(dto.getEmail());
-        if(user != null)
+        if(repository.findByEmail(dto.getEmail()).isPresent())
             throw new EmailAlreadyRegistered(messageSource.getMessage("user.error.email.registered",null,Locale.getDefault()));
-        user = dto.getUserFromDto();
+        User user = dto.getUserFromDto();
         user.setPassword(encoder.encode(user.getPassword()));
 
-        Role role = roleRepository.findByName(ERole.ROLE_USER.toString());
+        Role role = roleService.getByRolNombre(ERole.ROLE_USER).get();
         Set<Role> roleSet = new HashSet<>();
         roleSet.add(role);
         user.setRole(roleSet);
@@ -126,7 +136,7 @@ public class UserServiceImpl implements IUser, UserDetailsService {
 
     @Override
     public String login(LoginRequestDto dto) {
-        if(!repository.existsByEmail(dto.getEmail())) throw new NotRegisteredException(
+        if(repository.findByEmail(dto.getEmail()).isEmpty()) throw new NotRegisteredException(
                 messageSource.getMessage("login.error.email.not.registered", null, Locale.getDefault())
         );
 
@@ -135,15 +145,8 @@ public class UserServiceImpl implements IUser, UserDetailsService {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        final String token = tokenProvider.generateToken(authentication);
+        String token = provider.generateToken(authentication);
         return token;
 
     }
-
-    /*public LocalDate format(String string){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
-        LocalDate date = LocalDate.parse(string, formatter);
-        formatter.format(date);
-        return date;
-    }*/
 }
