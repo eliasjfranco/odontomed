@@ -91,15 +91,15 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     public RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered {
         if(repository.findByEmail(dto.getEmail()).isPresent())
             throw new EmailAlreadyRegistered(messageSource.getMessage("user.error.email.registered",null,Locale.getDefault()));
-        User user = dto.getUserFromDto();
+        User user = new User();
+        user = dto.getUserFromDto();
         System.out.println(dto.getFecha());
         user.setPassword(encoder.encode(user.getPassword()));
         user.setFecha(format(dto.getFecha()));
         System.out.println(user.getFecha());
 
-        Role role = roleService.getByRolNombre(ERole.ROLE_USER).get();
         Set<Role> roleSet = new HashSet<>();
-        roleSet.add(role);
+        roleSet.add(roleService.getByRolNombre(ERole.ROLE_USER).get());
         user.setRole(roleSet);
 
         return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(user));
@@ -156,7 +156,7 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     }
 
     public LocalDate format(String string){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MM-yyyy");
         LocalDate date = LocalDate.parse(string, formatter);
         formatter.format(date);
         return date;
