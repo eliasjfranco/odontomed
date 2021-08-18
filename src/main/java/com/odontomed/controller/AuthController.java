@@ -2,7 +2,7 @@ package com.odontomed.controller;
 
 import com.odontomed.dto.request.LoginRequestDto;
 import com.odontomed.dto.request.RegisterRequestDto;
-import com.odontomed.service.Impl.AuthServiceImpl;
+import com.odontomed.service.Impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +15,12 @@ import javax.validation.Valid;
 public class AuthController {
 
     @Autowired
-    AuthServiceImpl service;
+    UserServiceImpl service;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDto dto){
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(service.createUser(dto));
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.saveUser(dto));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

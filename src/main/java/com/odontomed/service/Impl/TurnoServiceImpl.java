@@ -1,9 +1,7 @@
 package com.odontomed.service.Impl;
 
-import com.odontomed.dto.response.TurnoResponseDto;
 import com.odontomed.model.TurnoPersona;
 import com.odontomed.repository.TurnoPersonaRepository;
-import com.odontomed.repository.TurnoRepository;
 import com.odontomed.service.Interface.ITurno;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.projection.ProjectionFactory;
@@ -23,13 +21,17 @@ public class TurnoServiceImpl implements ITurno {
 
     @Override
     public List<TurnoPersona> getAll() {
+        System.out.println("asdasd");
         LocalDate date = LocalDate.now();
-        return repository.findAllByFecha(formatDate(date));
+        date = formatDate(date);
+        System.out.println(date);
+        return repository.obtenerAllByFecha(date);
     }
 
     public LocalDate formatDate(LocalDate date){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MMM/yyyy");
         formatter.format(date);
+        System.out.println(date);
         return date;
     }
 }

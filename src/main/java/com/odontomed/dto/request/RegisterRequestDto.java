@@ -1,17 +1,17 @@
 package com.odontomed.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.odontomed.model.User;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
-@Getter @Setter @NoArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class RegisterRequestDto {
 
     @NotBlank(message = "El campo Nombres no puede estar vacío")
@@ -34,6 +34,25 @@ public class RegisterRequestDto {
 
     @NotBlank(message = "El campo Password no puede estar vacío")
     private String password;
+
+    public User getUserFromDto() {
+        User user = new User();
+        user.setFirstname(firstname);
+        user.setLastname(lastname);
+        user.setFecha(format(fecha));
+        user.setDni(dni);
+        user.setTel(tel);
+        user.setEmail(email);
+        user.setPassword(password);
+        return user;
+    }
+
+    public LocalDate format(String string){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
+        LocalDate date = LocalDate.parse(string, formatter);
+        formatter.format(date);
+        return date;
+    }
 
 
 

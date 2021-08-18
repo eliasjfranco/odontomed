@@ -14,10 +14,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
-@AllArgsConstructor @NoArgsConstructor
+@NoArgsConstructor
 @Getter @Setter
 @Table(name = "usuario")
-public class User implements UserDetails {
+public class User {
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,9 +50,6 @@ public class User implements UserDetails {
     @Column(name = "deleted")
     private Boolean deleted = false;
 
-    @ElementCollection(targetClass = GrantedAuthority.class)
-    private Collection<? extends GrantedAuthority> authorities;
-
     @OneToMany(mappedBy = "user")
     private Set<TurnoPersona> turnoPersona;
 
@@ -64,16 +62,7 @@ public class User implements UserDetails {
                     name = "role_id", referencedColumnName = "id"))
     private Set<Role> role;
 
-    public static UserDetails build(User user){
-        List<GrantedAuthority> authorities = user.getRole()
-                .stream()
-                .map(rol -> new SimpleGrantedAuthority(rol.getName()))
-                .collect(Collectors.toList());
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
-    }
-
-    @Builder
-    public User(String firstname, String lastname, String tel, String email, LocalDate fecha, String dni, String password, Collection<? extends GrantedAuthority> authorities, Set<Role> role) {
+    public User(String firstname, String lastname, String tel, String email, LocalDate fecha, String dni, String password) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.tel = tel;
@@ -81,42 +70,5 @@ public class User implements UserDetails {
         this.fecha = fecha;
         this.dni = dni;
         this.password = password;
-        this.authorities = authorities;
-        this.role = role;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 }
