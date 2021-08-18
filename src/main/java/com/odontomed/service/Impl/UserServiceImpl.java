@@ -7,7 +7,7 @@ import com.odontomed.dto.response.RegisterResponseDto;
 import com.odontomed.exception.EmailAlreadyRegistered;
 
 import com.odontomed.exception.NotRegisteredException;
-import com.odontomed.jwt.JwtProvider;
+import com.odontomed.jwt.TokenProvider;
 import com.odontomed.model.ERole;
 import com.odontomed.model.Role;
 import com.odontomed.model.User;
@@ -20,12 +20,16 @@ import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,26 +38,60 @@ import java.util.Locale;
 import java.util.Set;
 
 @Service
-public class AuthServiceImpl implements IUser {
+public class UserServiceImpl implements IUser, UserDetailsService {
 
     @Autowired
     MessageSource messageSource;
     @Autowired
     ProjectionFactory projectionFactory;
     @Autowired
-    PasswordEncoder passwordEncoder;
+    BCryptPasswordEncoder encoder;
     @Autowired
     UserRepository repository;
     @Autowired
     RoleRepository roleRepository;
     @Autowired
-    JwtProvider jwtProvider;
-    @Autowired
     AuthenticationManager authenticationManager;
+    @Autowired
+    TokenProvider tokenProvider;
 
     public static final String BEARER = "Bearer ";
 
     @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = repository.findByEmail(email);
+        if(user == null){
+            throw new UsernameNotFoundException(messageSource.getMessage("user.error.not.found", null, Locale.getDefault()));
+        }
+        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), getAuthority(user));
+    }
+
+    private Set<SimpleGrantedAuthority> getAuthority(User user){
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        user.getRole().forEach(role -> {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        });
+        return authorities;
+    }
+
+    @Override
+    public RegisterResponseDto saveUser(RegisterRequestDto dto) throws IOException, EmailAlreadyRegistered {
+        User user = repository.findByEmail(dto.getEmail());
+        if(user != null)
+            throw new EmailAlreadyRegistered(messageSource.getMessage("user.error.email.registered",null,Locale.getDefault()));
+        user = dto.getUserFromDto();
+        user.setPassword(encoder.encode(user.getPassword()));
+
+        Role role = roleRepository.findByName(ERole.ROLE_USER.toString());
+        Set<Role> roleSet = new HashSet<>();
+        roleSet.add(role);
+        user.setRole(roleSet);
+
+        return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(user));
+
+    }
+
+    /*@Override
     public UserDetails loadUserByUsername(String email) {
         User user = repository.findByEmail(email).orElseThrow(()
                 -> new UsernameNotFoundException(messageSource.getMessage("user.error.email.not.found",null,Locale.getDefault())));
@@ -76,7 +114,7 @@ public class AuthServiceImpl implements IUser {
                 .build();
 
         Set<Role> roles = new HashSet<>();
-        roles.add(roleRepository.findByName(ERole.ROLE_USER.toString()).get());
+        roles.add(roleRepository.findByName(ERole.ROLE_USER.toString()));
         user.setRole(roles);
 
         User creation = repository.save(user);
@@ -84,27 +122,28 @@ public class AuthServiceImpl implements IUser {
         //Crear servicio de envio de email de bienvenida.
 
         return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(creation));
-    }
+    }*/
 
     @Override
     public String login(LoginRequestDto dto) {
-        if(repository.findByEmail(dto.getEmail()).isEmpty()) throw new NotRegisteredException(
+        if(!repository.existsByEmail(dto.getEmail())) throw new NotRegisteredException(
                 messageSource.getMessage("login.error.email.not.registered", null, Locale.getDefault())
         );
 
-        Authentication authentication = authenticationManager.authenticate(
+        final Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        return BEARER + jwtProvider.generatedToken(authentication);
+        final String token = tokenProvider.generateToken(authentication);
+        return token;
 
     }
 
-    public LocalDate format(String string){
+    /*public LocalDate format(String string){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
         LocalDate date = LocalDate.parse(string, formatter);
         formatter.format(date);
         return date;
-    }
+    }*/
 }

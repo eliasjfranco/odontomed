@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @Table(name = "usuario")
 public class User implements UserDetails {
 
+    private final static long servialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -64,16 +66,18 @@ public class User implements UserDetails {
                     name = "role_id", referencedColumnName = "id"))
     private Set<Role> role;
 
-    public static UserDetails build(User user){
+    public static UserDetails build(User user) {
         List<GrantedAuthority> authorities = user.getRole()
                 .stream()
                 .map(rol -> new SimpleGrantedAuthority(rol.getName()))
                 .collect(Collectors.toList());
+
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
     }
 
     @Builder
-    public User(String firstname, String lastname, String tel, String email, LocalDate fecha, String dni, String password, Collection<? extends GrantedAuthority> authorities, Set<Role> role) {
+    public User(String firstname, String lastname, String tel, String email, LocalDate fecha, String dni, String password, Collection<? extends GrantedAuthority> authorities) {
+        super();
         this.firstname = firstname;
         this.lastname = lastname;
         this.tel = tel;
@@ -82,7 +86,6 @@ public class User implements UserDetails {
         this.dni = dni;
         this.password = password;
         this.authorities = authorities;
-        this.role = role;
     }
 
     @Override

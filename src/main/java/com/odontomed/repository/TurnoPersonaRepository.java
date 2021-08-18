@@ -12,5 +12,5 @@ import java.util.List;
 public interface TurnoPersonaRepository extends JpaRepository<TurnoPersona, Long> {
 
     @Query(value = "SELECT * from turno_persona t where t.fecha > :fecha order by fecha asc", nativeQuery = true)
-    List<TurnoPersona> findAllByFecha(LocalDate fecha);
+    List<TurnoPersona> obtenerAllByFecha(LocalDate fecha);
 }
