@@ -39,21 +39,11 @@ public class RegisterRequestDto {
         User user = new User();
         user.setFirstname(firstname);
         user.setLastname(lastname);
-        user.setFecha(format(fecha));
         user.setDni(dni);
         user.setTel(tel);
         user.setEmail(email);
         user.setPassword(password);
         return user;
     }
-
-    public LocalDate format(String string){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
-        LocalDate date = LocalDate.parse(string, formatter);
-        formatter.format(date);
-        return date;
-    }
-
-
 
 }

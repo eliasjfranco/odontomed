@@ -30,6 +30,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
@@ -90,7 +92,10 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         if(repository.findByEmail(dto.getEmail()).isPresent())
             throw new EmailAlreadyRegistered(messageSource.getMessage("user.error.email.registered",null,Locale.getDefault()));
         User user = dto.getUserFromDto();
+        System.out.println(dto.getFecha());
         user.setPassword(encoder.encode(user.getPassword()));
+        user.setFecha(format(dto.getFecha()));
+        System.out.println(user.getFecha());
 
         Role role = roleService.getByRolNombre(ERole.ROLE_USER).get();
         Set<Role> roleSet = new HashSet<>();
@@ -148,5 +153,12 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         String token = provider.generateToken(authentication);
         return token;
 
+    }
+
+    public LocalDate format(String string){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
+        LocalDate date = LocalDate.parse(string, formatter);
+        formatter.format(date);
+        return date;
     }
 }
