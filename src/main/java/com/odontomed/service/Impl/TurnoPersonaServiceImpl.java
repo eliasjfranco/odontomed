@@ -8,6 +8,7 @@ import com.odontomed.exception.TurnoAlreadyExists;
 import com.odontomed.jwt.JwtEntryPoint;
 import com.odontomed.jwt.JwtProvider;
 import com.odontomed.jwt.JwtTokenFilter;
+import com.odontomed.model.ERole;
 import com.odontomed.model.Turno;
 import com.odontomed.model.TurnoPersona;
 import com.odontomed.model.User;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +53,6 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
     public List<TurnoPersona> getAll() {
         LocalDate date = LocalDate.now();
         date = formatDate.dateToDate(date);
-        System.out.println(date);
         return repository.obtenerAllByFecha(date);
     }
 
@@ -70,7 +71,6 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
         turnoPersona.setUser(user);
         turnoPersona.setFecha(formatDate.stringToDate(dto.getFecha()));
-
         return projectionFactory.createProjection(TurnoSaveResponseDto.class, repository.save(turnoPersona));
     }
 
@@ -80,13 +80,25 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
             throw new InvalidUserException(messageSource.getMessage("turno.error.not.exists",null,Locale.getDefault()));
 
         TurnoPersona turnoPersona = repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).get();
-
+        turnoPersona.setTurno(null);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String token = jwtFilter.getToken(req);
         String username = jwtProvider.getNombreUsuarioFromToken(token);
         User user = userRepository.findByEmail(username).get();
         if(turnoPersona.getUser().getDni() == user.getDni()){
 
+            turnoPersona.setUser(null);
+            repository.delete(turnoPersona);
+
+        }else{
+            if(authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals(ERole.ROLE_ADMIN.toString()))){
+                turnoPersona.setUser(null);
+                repository.delete(turnoPersona);
+            } else{
+                throw new InvalidUserException(messageSource.getMessage("user.error.not.authorization", null, Locale.getDefault()));
+            }
         }
+
         return messageSource.getMessage("turno.delete.successful",null,Locale.getDefault());
     }
 }

@@ -29,6 +29,8 @@ public class TurnoController {
     @GetMapping
     public ResponseEntity<?> obtenerTurnos(HttpServletRequest req){
         try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            System.out.println(auth.getAuthorities());
             return ResponseEntity.status(HttpStatus.OK).body(service.getAll());
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageSource.getMessage("turnos.error.not.found",null, Locale.getDefault()));
