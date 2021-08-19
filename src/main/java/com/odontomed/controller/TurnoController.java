@@ -1,6 +1,7 @@
 package com.odontomed.controller;
 
 import com.odontomed.dto.request.TurnoPersonaDto;
+import com.odontomed.exception.InvalidUserException;
 import com.odontomed.exception.TurnoAlreadyExists;
 import com.odontomed.jwt.JwtProvider;
 import com.odontomed.jwt.JwtTokenFilter;
@@ -40,6 +41,15 @@ public class TurnoController {
             return ResponseEntity.status(HttpStatus.OK).body(service.save(dto, req));
         } catch (TurnoAlreadyExists e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<?> deleteTurno(@RequestBody TurnoPersonaDto dto, HttpServletRequest req){
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(service.delete(dto, req));
+        } catch (InvalidUserException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

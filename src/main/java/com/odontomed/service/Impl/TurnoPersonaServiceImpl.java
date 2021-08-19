@@ -1,7 +1,9 @@
 package com.odontomed.service.Impl;
 
 import com.odontomed.dto.request.TurnoPersonaDto;
+import com.odontomed.dto.response.TurnoResponseDto;
 import com.odontomed.dto.response.TurnoSaveResponseDto;
+import com.odontomed.exception.InvalidUserException;
 import com.odontomed.exception.TurnoAlreadyExists;
 import com.odontomed.jwt.JwtEntryPoint;
 import com.odontomed.jwt.JwtProvider;
@@ -70,5 +72,21 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
         turnoPersona.setFecha(formatDate.stringToDate(dto.getFecha()));
 
         return projectionFactory.createProjection(TurnoSaveResponseDto.class, repository.save(turnoPersona));
+    }
+
+    @Override
+    public String delete(TurnoPersonaDto dto, HttpServletRequest req) throws InvalidUserException {
+        if(repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).isEmpty())
+            throw new InvalidUserException(messageSource.getMessage("turno.error.not.exists",null,Locale.getDefault()));
+
+        TurnoPersona turnoPersona = repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).get();
+
+        String token = jwtFilter.getToken(req);
+        String username = jwtProvider.getNombreUsuarioFromToken(token);
+        User user = userRepository.findByEmail(username).get();
+        if(turnoPersona.getUser().getDni() == user.getDni()){
+
+        }
+        return messageSource.getMessage("turno.delete.successful",null,Locale.getDefault());
     }
 }
