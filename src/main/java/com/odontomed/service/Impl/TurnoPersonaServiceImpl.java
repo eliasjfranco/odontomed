@@ -5,6 +5,7 @@ import com.odontomed.dto.response.TurnoResponseDto;
 import com.odontomed.dto.response.TurnoSaveResponseDto;
 import com.odontomed.exception.InvalidUserException;
 import com.odontomed.exception.TurnoAlreadyExists;
+import com.odontomed.exception.TurnoNotFoundException;
 import com.odontomed.jwt.JwtEntryPoint;
 import com.odontomed.jwt.JwtProvider;
 import com.odontomed.jwt.JwtTokenFilter;
@@ -25,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -57,48 +59,87 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
     }
 
     @Override
-    public TurnoSaveResponseDto save(TurnoPersonaDto dto, HttpServletRequest req) throws TurnoAlreadyExists {
-        if(repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).isPresent())
+    public TurnoSaveResponseDto save(TurnoPersonaDto dto, HttpServletRequest req) throws TurnoAlreadyExists, TurnoNotFoundException {
+        if(existTurno(dto))
             throw new TurnoAlreadyExists(messageSource.getMessage("turno.error.exists",null, Locale.getDefault()));
 
-        String token = jwtFilter.getToken(req);
-        String username = jwtProvider.getNombreUsuarioFromToken(token);
-        User user = userRepository.findByEmail(username).get();
+        //Obtenemos usuario en base al token
+        User user = getUserByToken(req);
         TurnoPersona turnoPersona = new TurnoPersona();
-        if(turnoRepository.findById(dto.getId_horario()).isPresent())
-            turnoPersona.setTurno(turnoRepository.findById(dto.getId_horario()).get());
-        turnoPersona.setId_horario(dto.getId_horario());
 
+        if(turnoRepository.findById(dto.getId_horario()).isPresent()){
+            turnoPersona.setTurno(turnoRepository.findById(dto.getId_horario()).get());
+        }
+        else{
+            throw new TurnoNotFoundException(messageSource.getMessage("turno.error.time.not.exists",null,Locale.getDefault()));
+        }
+
+        turnoPersona.setId_horario(dto.getId_horario());
         turnoPersona.setUser(user);
         turnoPersona.setFecha(formatDate.stringToDate(dto.getFecha()));
         return projectionFactory.createProjection(TurnoSaveResponseDto.class, repository.save(turnoPersona));
     }
 
     @Override
-    public String delete(TurnoPersonaDto dto, HttpServletRequest req) throws InvalidUserException {
-        if(repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).isEmpty())
-            throw new InvalidUserException(messageSource.getMessage("turno.error.not.exists",null,Locale.getDefault()));
+    public String delete(TurnoPersonaDto dto, HttpServletRequest req) throws TurnoNotFoundException, InvalidUserException {
+        //Verifica existencia del turno en base al parametro fecha y horario recibido, caso contrario, manda excepcion.
+        if(!existTurno(dto))
+            throw new TurnoNotFoundException(messageSource.getMessage("turno.error.not.exists",null,Locale.getDefault()));
 
-        TurnoPersona turnoPersona = repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).get();
-        turnoPersona.setTurno(null);
+        //Obtenemos el modelo del turno
+        TurnoPersona turnoPersona = getTurno(dto);
+
+        //Obtenemos rol del usuario, en base a la autenticacion.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String token = jwtFilter.getToken(req);
-        String username = jwtProvider.getNombreUsuarioFromToken(token);
-        User user = userRepository.findByEmail(username).get();
-        if(turnoPersona.getUser().getDni() == user.getDni()){
+
+        //Ontenemos usuario del token, para verificar si es propietario del turno.
+        User user = getUserByToken(req);
+
+        //Si es propietario del turno o si posee rol admin, elimina el turno. Caso contrario manda excepcion.
+        if(turnoPersona.getUser().getDni() == user.getDni() ||
+            authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals(ERole.ROLE_ADMIN.toString()))){
 
             turnoPersona.setUser(null);
             repository.delete(turnoPersona);
-
-        }else{
-            if(authentication.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals(ERole.ROLE_ADMIN.toString()))){
-                turnoPersona.setUser(null);
-                repository.delete(turnoPersona);
-            } else{
-                throw new InvalidUserException(messageSource.getMessage("user.error.not.authorization", null, Locale.getDefault()));
-            }
-        }
+        }else
+            throw new InvalidUserException(messageSource.getMessage("user.error.not.authorization", null, Locale.getDefault()));
 
         return messageSource.getMessage("turno.delete.successful",null,Locale.getDefault());
     }
+
+    @Override
+    public TurnoSaveResponseDto update(TurnoPersonaDto dto, HttpServletRequest req) throws TurnoAlreadyExists, TurnoNotFoundException {
+        /*if(!existTurno(dto))
+            throw new TurnoNotFoundException(messageSource.getMessage("turno.error.not.exists", null, Locale.getDefault()));
+
+        User user = getUserByToken(req);
+        TurnoPersona turnoPersona = getTurno(dto);
+
+        if(turnoPersona.getUser().getDni() == user.getDni()){
+            turnoPersona.setUser(null);
+            repository.delete(turnoPersona);
+        }*/
+
+        return projectionFactory.createProjection(TurnoSaveResponseDto.class, dto);
+
+    }
+
+    private User getUserByToken(HttpServletRequest req){
+        String token = jwtFilter.getToken(req);
+        String username = jwtProvider.getNombreUsuarioFromToken(token);
+        return userRepository.findByEmail(username).get();
+    }
+
+    private Boolean existTurno(TurnoPersonaDto dto){
+            if(repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).isPresent())
+                return true;
+            return false;
+    }
+
+    private TurnoPersona getTurno(TurnoPersonaDto dto){
+        TurnoPersona turnoPersona = repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).get();
+        turnoPersona.setTurno(null);
+        return turnoPersona;
+    }
+
 }
