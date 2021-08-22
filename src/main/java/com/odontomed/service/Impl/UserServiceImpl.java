@@ -1,6 +1,7 @@
 package com.odontomed.service.Impl;
 
 
+import com.odontomed.config.SendgridConfig;
 import com.odontomed.dto.request.LoginRequestDto;
 import com.odontomed.dto.request.RegisterRequestDto;
 import com.odontomed.dto.response.RegisterResponseDto;
@@ -53,6 +54,8 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     JwtProvider provider;
     @Autowired
     FormatDate formatDate;
+    @Autowired
+    SendgridConfig sendgrid;
 
     public static final String BEARER = "Bearer ";
 
@@ -83,6 +86,8 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         Set<Role> roleSet = new HashSet<>();
         roleSet.add(roleService.getByRolNombre(ERole.ROLE_USER).get());
         user.setRole(roleSet);
+
+        sendgrid.enviarEmail(dto.getEmail(), dto.getFirstname(), dto.getLastname());
 
         return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(user));
 
