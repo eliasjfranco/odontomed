@@ -1,5 +1,6 @@
 package com.odontomed.service.Impl;
 
+import com.odontomed.config.SendgridConfig;
 import com.odontomed.dto.request.TurnoPersonaDto;
 import com.odontomed.dto.response.TurnoResponseDto;
 import com.odontomed.dto.response.TurnoSaveResponseDto;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -50,6 +52,8 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
     UserRepository userRepository;
     @Autowired
     TurnoRepository turnoRepository;
+    @Autowired
+    SendgridConfig sendgrid;
 
     @Override
     public List<TurnoPersona> getAll() {
@@ -77,6 +81,10 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
         turnoPersona.setId_horario(dto.getId_horario());
         turnoPersona.setUser(user);
         turnoPersona.setFecha(formatDate.stringToDate(dto.getFecha()));
+
+
+        sendgrid.emailTurno(turnoPersona.getUser().getEmail(), turnoPersona.getUser().getFirstname(), turnoPersona.getUser().getLastname(), turnoPersona.getFecha(), getHorarioForEmail(turnoPersona.getId_horario()));
+
         return projectionFactory.createProjection(TurnoSaveResponseDto.class, repository.save(turnoPersona));
     }
 
@@ -140,6 +148,11 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
         TurnoPersona turnoPersona = repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).get();
         turnoPersona.setTurno(null);
         return turnoPersona;
+    }
+
+    private LocalTime getHorarioForEmail(Long id){
+        Turno turno = turnoRepository.findById(id).get();
+        return turno.getHs();
     }
 
 }

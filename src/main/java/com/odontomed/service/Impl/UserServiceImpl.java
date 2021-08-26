@@ -87,7 +87,7 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         roleSet.add(roleService.getByRolNombre(ERole.ROLE_USER).get());
         user.setRole(roleSet);
 
-        sendgrid.enviarEmail(dto.getEmail(), dto.getFirstname(), dto.getLastname());
+        sendgrid.emailBienvenida(dto.getEmail(), user.getFirstname(), user.getLastname());
 
         return projectionFactory.createProjection(RegisterResponseDto.class, repository.save(user));
 

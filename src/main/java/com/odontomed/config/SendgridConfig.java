@@ -8,31 +8,56 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Service
 public class SendgridConfig {
 
 
-    public void enviarEmail(String receptor, String nombre, String apellido) {
-        Email from = new Email("francoeliasjoel@gmail.com");
+    public void emailBienvenida(String receptor, String nombre, String apellido){
+        Mail mail = new Mail();
         String name = apellido + " " + nombre;
+        Email from = new Email("eliaass95@gmail.com");
         Email to = new Email(receptor);
-        String sub = "";
-        Content content = new Content("", "");
+        mail.setFrom(from);
 
-        Personalization personalization = new Personalization();
-        personalization.addSubstitution("name", name);
+        Personalization pers = new Personalization();
 
-        Mail mail = new Mail(from, sub, to, content);
+        pers.addTo(to);
+        pers.addDynamicTemplateData("name", new String[] {name});
+        mail.addPersonalization(pers);
+        mail.setTemplateId("");
+
+        enviarEmail(mail);
 
 
-        SendGrid sendGrid = new SendGrid("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");
+    }
 
-        mail.addPersonalization(personalization);
-        mail.setTemplateId("d-a032668c52534f18881b63294f192e65");
+    public void emailTurno(String receptor, String nombre, String apellido, LocalDate dia, LocalTime hs){
+        Mail mail = new Mail();
+        String name = apellido + " " + nombre;
+        Email from = new Email("eliaass95@gmail.com");
+        Email to = new Email(receptor);
+        mail.setFrom(from);
+
+        Personalization pers = new Personalization();
+
+        pers.addTo(to);
+        pers.addDynamicTemplateData("name", new String[] {name});
+        pers.addDynamicTemplateData("fecha", new String[] {dia.toString()});
+        pers.addDynamicTemplateData("horario", new String[] {hs.toString()});
+        mail.addPersonalization(pers);
+        mail.setTemplateId("");
+
+        enviarEmail(mail);
+    }
+
+    public void enviarEmail(Mail mail) {
+
+        SendGrid sendGrid = new SendGrid("");
         Request req = new Request();
 
         try {
