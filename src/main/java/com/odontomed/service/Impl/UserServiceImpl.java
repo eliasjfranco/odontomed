@@ -9,10 +9,7 @@ import com.odontomed.exception.EmailAlreadyRegistered;
 
 import com.odontomed.exception.NotRegisteredException;
 import com.odontomed.jwt.JwtProvider;
-import com.odontomed.model.ERole;
-import com.odontomed.model.Role;
-import com.odontomed.model.User;
-import com.odontomed.model.UsuarioMain;
+import com.odontomed.model.*;
 import com.odontomed.repository.UserRepository;
 import com.odontomed.service.Interface.IUser;
 import com.odontomed.util.FormatDate;
@@ -94,7 +91,8 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     }
 
     @Override
-    public String login(LoginRequestDto dto) {
+    public Jwt login(LoginRequestDto dto) {
+        Jwt jwt = new Jwt();
         if(repository.findByEmail(dto.getEmail()).isEmpty()) throw new NotRegisteredException(
                 messageSource.getMessage("login.error.email.not.registered", null, Locale.getDefault())
         );
@@ -104,8 +102,8 @@ public class UserServiceImpl implements IUser, UserDetailsService{
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = provider.generateToken(authentication);
-        return token;
+        jwt.setToken(provider.generateToken(authentication));
+        return jwt;
 
     }
 }

@@ -55,7 +55,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                .antMatchers("/turno").hasAnyRole("USER").and().authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/s3").permitAll()
+                .antMatchers(HttpMethod.GET, "/s3").permitAll()
+                .antMatchers(HttpMethod.GET, "/s3/download").permitAll()
+                .antMatchers(HttpMethod.GET,"/turno").hasAnyRole("USER").and().authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/turno").hasAnyRole("USER").and().authorizeRequests()
                 .anyRequest().authenticated().and().exceptionHandling().authenticationEntryPoint(jwtEntryPoint)
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

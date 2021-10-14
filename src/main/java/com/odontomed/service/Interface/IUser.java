@@ -5,6 +5,7 @@ import com.odontomed.dto.request.RegisterRequestDto;
 import com.odontomed.dto.response.RegisterResponseDto;
 import com.odontomed.exception.EmailAlreadyRegistered;
 import com.odontomed.exception.NotRegisteredException;
+import com.odontomed.model.Jwt;
 import com.odontomed.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,7 +18,7 @@ public interface IUser  {
 
     Optional<User> getByEmail(String email);
 
-    String login(LoginRequestDto dto) throws NotRegisteredException;
+    Jwt login(LoginRequestDto dto) throws NotRegisteredException;
 
     RegisterResponseDto saveUser(RegisterRequestDto dto) throws EmailAlreadyRegistered, IOException;
 

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -27,8 +28,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDto dto){
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto dto){
         try {
+            System.out.println(dto.getEmail());
+            System.out.println(dto.getPassword());
             return ResponseEntity.ok(service.login(dto));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

@@ -4,8 +4,6 @@ import com.odontomed.dto.request.TurnoPersonaDto;
 import com.odontomed.exception.InvalidUserException;
 import com.odontomed.exception.TurnoAlreadyExists;
 import com.odontomed.exception.TurnoNotFoundException;
-import com.odontomed.jwt.JwtProvider;
-import com.odontomed.jwt.JwtTokenFilter;
 import com.odontomed.service.Impl.TurnoPersonaServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/turno")
 public class TurnoController {
