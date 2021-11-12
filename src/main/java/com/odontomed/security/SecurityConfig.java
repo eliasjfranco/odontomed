@@ -29,6 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtEntryPoint jwtEntryPoint;
 
 
+
     @Bean
     public BCryptPasswordEncoder encoder(){
         return new BCryptPasswordEncoder();
@@ -58,8 +59,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/s3").permitAll()
                 .antMatchers(HttpMethod.GET, "/s3").permitAll()
                 .antMatchers(HttpMethod.GET, "/s3/download").permitAll()
-                .antMatchers(HttpMethod.GET,"/turno").hasAnyRole("USER").and().authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/turno").hasAnyRole("USER").and().authorizeRequests()
+                .antMatchers(HttpMethod.GET,"/turno").hasAnyRole("USER","ADMIN").and().authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/turno").hasAnyRole("USER","ADMIN").and().authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/informacion").hasAnyRole("USER","ADMIN").and().authorizeRequests()
+                .antMatchers(HttpMethod.PUT, "/informacion").hasAnyRole("USER","ADMIN").and().authorizeRequests()
                 .anyRequest().authenticated().and().exceptionHandling().authenticationEntryPoint(jwtEntryPoint)
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

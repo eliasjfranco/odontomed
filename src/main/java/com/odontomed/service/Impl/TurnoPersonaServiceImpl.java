@@ -27,7 +27,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -37,23 +36,19 @@ import java.util.Locale;
 public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
     @Autowired
-    TurnoPersonaRepository repository;
+    private TurnoPersonaRepository repository;
     @Autowired
-    ProjectionFactory projectionFactory;
+    private ProjectionFactory projectionFactory;
     @Autowired
-    MessageSource messageSource;
+    private MessageSource messageSource;
     @Autowired
-    JwtProvider jwtProvider;
+    private FormatDate formatDate;
     @Autowired
-    JwtTokenFilter jwtFilter;
+    private UserRepository userRepository;
     @Autowired
-    FormatDate formatDate;
+    private TurnoRepository turnoRepository;
     @Autowired
-    UserRepository userRepository;
-    @Autowired
-    TurnoRepository turnoRepository;
-    @Autowired
-    SendgridConfig sendgrid;
+    private SendgridConfig sendgrid;
 
     @Override
     public List<TurnoPersona> getAll() {
@@ -64,9 +59,13 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
     @Override
     public TurnoSaveResponseDto save(TurnoPersonaDto dto, HttpServletRequest req) throws TurnoAlreadyExists, TurnoNotFoundException {
+        //Confirma que no este agendado el turno con fecha y horario
         if(existTurno(dto))
             throw new TurnoAlreadyExists(messageSource.getMessage("turno.error.exists",null, Locale.getDefault()));
 
+        //Confirma que el turno a agendar, es fecha posterior al dia de hoy.
+        if(compareTurno(dto.getFecha()))
+            throw new TurnoNotFoundException(messageSource.getMessage("turno.error.save", null, Locale.getDefault()));
         //Obtenemos usuario en base al token
         User user = getUserByToken(req);
         TurnoPersona turnoPersona = new TurnoPersona();
@@ -90,7 +89,7 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
     @Override
     public String delete(TurnoPersonaDto dto, HttpServletRequest req) throws TurnoNotFoundException, InvalidUserException {
-        //Verifica existencia del turno en base al parametro fecha y horario recibido, caso contrario, manda excepcion.
+        //Verifica existencia del turno en base al parametro fecha y horario recibido, caso contrario, salta excepcion.
         if(!existTurno(dto))
             throw new TurnoNotFoundException(messageSource.getMessage("turno.error.not.exists",null,Locale.getDefault()));
 
@@ -100,7 +99,7 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
         //Obtenemos rol del usuario, en base a la autenticacion.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        //Ontenemos usuario del token, para verificar si es propietario del turno.
+        //Obtenemos usuario del token, para verificar si es propietario del turno.
         User user = getUserByToken(req);
 
         //Si es propietario del turno o si posee rol admin, elimina el turno. Caso contrario manda excepcion.
@@ -133,13 +132,15 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
     }
 
     private User getUserByToken(HttpServletRequest req){
+        JwtTokenFilter jwtFilter = new JwtTokenFilter();
+        JwtProvider jwtProvider = new JwtProvider();
         String token = jwtFilter.getToken(req);
         String username = jwtProvider.getNombreUsuarioFromToken(token);
         return userRepository.findByEmail(username).get();
     }
 
     private Boolean existTurno(TurnoPersonaDto dto){
-            if(repository.getByFechaAndId(formatDate.stringToDate(dto.getFecha()), dto.getId_horario()).isPresent())
+            if(repository.getByFechaAndId(formatDate.replaceWithFormat(dto.getFecha()), dto.getId_horario()).isPresent())
                 return true;
             return false;
     }
@@ -153,6 +154,14 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
     private LocalTime getHorarioForEmail(Long id){
         Turno turno = turnoRepository.findById(id).get();
         return turno.getHs();
+    }
+
+    private Boolean compareTurno(String fecha){
+        LocalDate today = LocalDate.now();
+        today = formatDate.dateToDate(today);
+        if(today.equals(formatDate.replaceWithFormat(fecha)))
+            return true;
+        return false;
     }
 
 }

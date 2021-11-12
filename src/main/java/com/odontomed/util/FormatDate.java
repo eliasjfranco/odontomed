@@ -8,6 +8,14 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class FormatDate {
 
+    public LocalDate replaceWithFormat(String fecha){
+        if(fecha.contains("/"))
+           return stringToDate(fecha);
+        else
+            fecha.replaceAll("-","/");
+            return stringToDate(fecha);
+    }
+
     public LocalDate stringToDate(String string){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/MM/yyyy");
         LocalDate date = LocalDate.parse(string, formatter);

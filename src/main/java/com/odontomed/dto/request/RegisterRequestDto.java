@@ -1,5 +1,6 @@
 package com.odontomed.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.odontomed.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,6 +34,7 @@ public class RegisterRequestDto {
     @NotBlank(message = "El campo Password no puede estar vacío")
     private String password;
 
+    @JsonIgnore
     public User getUserFromDto() {
         User user = new User();
         user.setFirstname(firstname);

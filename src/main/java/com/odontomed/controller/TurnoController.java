@@ -22,12 +22,12 @@ import java.util.Locale;
 public class TurnoController {
 
     @Autowired
-    TurnoPersonaServiceImpl service;
+    private TurnoPersonaServiceImpl service;
     @Autowired
-    MessageSource messageSource;
+    private MessageSource messageSource;
 
     @GetMapping
-    public ResponseEntity<?> obtenerTurnos(HttpServletRequest req){
+    public ResponseEntity<?> obtenerTurnosAgendados(HttpServletRequest req){
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             System.out.println(auth.getAuthorities());

@@ -2,17 +2,17 @@ package com.odontomed.service.Interface;
 
 import com.odontomed.dto.request.LoginRequestDto;
 import com.odontomed.dto.request.RegisterRequestDto;
+import com.odontomed.dto.request.UpdateUserRequestDto;
 import com.odontomed.dto.response.RegisterResponseDto;
-import com.odontomed.exception.EmailAlreadyRegistered;
-import com.odontomed.exception.NotRegisteredException;
+import com.odontomed.dto.response.UserInfoResponseDto;
+import com.odontomed.exception.*;
 import com.odontomed.model.Jwt;
 import com.odontomed.model.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface IUser  {
 
@@ -20,11 +20,11 @@ public interface IUser  {
 
     Jwt login(LoginRequestDto dto) throws NotRegisteredException;
 
-    RegisterResponseDto saveUser(RegisterRequestDto dto) throws EmailAlreadyRegistered, IOException;
+    RegisterResponseDto saveUser(RegisterRequestDto dto) throws EmailAlreadyRegistered, DniAlreadyRegistered;
 
-    /*UserDetails loadUserByUsername(String email) throws UsernameNotFoundException;
+    Stream<UserInfoResponseDto> getAllUser(HttpServletRequest req) throws InvalidUserException;
 
-    User getUser(String email);
+    UserInfoResponseDto getInformationUser(String firstname, String lastname, HttpServletRequest req) throws InvalidUserException;
 
-    User getUserById(Long id);*/
+    UserInfoResponseDto updateInformationUser(String tel, HttpServletRequest req) throws InvalidUserException, UserNotFoundException;
 }
