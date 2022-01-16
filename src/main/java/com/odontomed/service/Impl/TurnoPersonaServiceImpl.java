@@ -10,10 +10,7 @@ import com.odontomed.exception.TurnoNotFoundException;
 import com.odontomed.jwt.JwtEntryPoint;
 import com.odontomed.jwt.JwtProvider;
 import com.odontomed.jwt.JwtTokenFilter;
-import com.odontomed.model.ERole;
-import com.odontomed.model.Turno;
-import com.odontomed.model.TurnoPersona;
-import com.odontomed.model.User;
+import com.odontomed.model.*;
 import com.odontomed.repository.TurnoPersonaRepository;
 import com.odontomed.repository.TurnoRepository;
 import com.odontomed.repository.UserRepository;
@@ -31,24 +28,29 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.LongToIntFunction;
 
 @Service
 public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
     @Autowired
-    private TurnoPersonaRepository repository;
+    TurnoPersonaRepository repository;
     @Autowired
-    private ProjectionFactory projectionFactory;
+    ProjectionFactory projectionFactory;
     @Autowired
-    private MessageSource messageSource;
+    MessageSource messageSource;
     @Autowired
-    private FormatDate formatDate;
+    FormatDate formatDate;
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
     @Autowired
-    private TurnoRepository turnoRepository;
+    TurnoRepository turnoRepository;
     @Autowired
-    private SendgridConfig sendgrid;
+    SendgridConfig sendgrid;
+    @Autowired
+    JwtTokenFilter jwtFilter;
+    @Autowired
+    JwtProvider jwtProvider;
 
     @Override
     public List<TurnoPersona> getAll() {
@@ -79,7 +81,7 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
         turnoPersona.setId_horario(dto.getId_horario());
         turnoPersona.setUser(user);
-        turnoPersona.setFecha(formatDate.stringToDate(dto.getFecha()));
+        turnoPersona.setFecha(formatDate.replaceWithFormat(dto.getFecha()));
 
 
         sendgrid.emailTurno(turnoPersona.getUser().getEmail(), turnoPersona.getUser().getFirstname(), turnoPersona.getUser().getLastname(), turnoPersona.getFecha(), getHorarioForEmail(turnoPersona.getId_horario()));
@@ -131,13 +133,37 @@ public class TurnoPersonaServiceImpl implements ITurnoPersona {
 
     }
 
+    @Override
+    public List<Turno> getAllId() {
+        List<Turno> turno = turnoRepository.findAll();
+        return turno;
+    }
+
+    @Override
+    public String getInfo(HttpServletRequest req, Jwt jwt){
+        System.out.println(jwt.getToken());
+        User user = getUserByToken(req);
+        if(user != null){
+            return user.getFirstname();
+        }
+        return "";
+    }
+
+    @Override
+    public Integer getCantId() {
+        Integer cant = Math.toIntExact(turnoRepository.count());
+        return cant;
+    }
+
     private User getUserByToken(HttpServletRequest req){
-        JwtTokenFilter jwtFilter = new JwtTokenFilter();
-        JwtProvider jwtProvider = new JwtProvider();
         String token = jwtFilter.getToken(req);
         String username = jwtProvider.getNombreUsuarioFromToken(token);
         return userRepository.findByEmail(username).get();
     }
+
+
+
+
 
     private Boolean existTurno(TurnoPersonaDto dto){
             if(repository.getByFechaAndId(formatDate.replaceWithFormat(dto.getFecha()), dto.getId_horario()).isPresent())

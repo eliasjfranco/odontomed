@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface TurnoPersonaRepository extends JpaRepository<TurnoPersona, Long> {
 
-    @Query(value = "SELECT * from turno_persona t where t.fecha >= :fecha order by fecha asc", nativeQuery = true)
+    @Query(value = "SELECT * from turno_persona t where t.fecha > :fecha order by fecha, id_horario asc", nativeQuery = true)
     List<TurnoPersona> obtenerAllByFecha(LocalDate fecha);
 
     @Query(value = "Select * from turno_persona t where t.fecha = :fecha and t.id_horario = :id ", nativeQuery = true)

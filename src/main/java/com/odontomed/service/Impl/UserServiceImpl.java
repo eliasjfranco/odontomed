@@ -2,9 +2,8 @@ package com.odontomed.service.Impl;
 
 
 import com.odontomed.config.SendgridConfig;
-import com.odontomed.dto.request.LoginRequestDto;
-import com.odontomed.dto.request.RegisterRequestDto;
-import com.odontomed.dto.request.UpdateUserRequestDto;
+import com.odontomed.dto.request.*;
+import com.odontomed.dto.response.Authorized;
 import com.odontomed.dto.response.RegisterResponseDto;
 import com.odontomed.dto.response.UserInfoResponseDto;
 import com.odontomed.exception.*;
@@ -114,7 +113,7 @@ public class UserServiceImpl implements IUser, UserDetailsService{
 
     @Override
     public Stream<UserInfoResponseDto> getAllUser(HttpServletRequest req) throws InvalidUserException {
-        if(!isAdmin(req))
+        if(!isAdmin())
             throw new InvalidUserException(messageSource.getMessage("user.error.not.authorization",null,Locale.getDefault()));
         List<User> usuarios = repository.findAll();
         return usuarios.stream().map(user -> projectionFactory.createProjection(UserInfoResponseDto.class, user));
@@ -122,7 +121,7 @@ public class UserServiceImpl implements IUser, UserDetailsService{
 
     @Override
     public UserInfoResponseDto getInformationUser(String firstname, String lastname, HttpServletRequest req) throws InvalidUserException {
-        if(!isAdmin(req))
+        if(!isAdmin())
             throw new InvalidUserException(messageSource.getMessage("user.error.not.authorization", null, Locale.getDefault()));
         User user = repository.findByName(firstname, lastname);
         if(user == null)
@@ -131,13 +130,48 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     }
 
     @Override
-    public UserInfoResponseDto updateInformationUser(String tel, HttpServletRequest req) throws InvalidUserException, UserNotFoundException {
-        User user = getUserByToken(req);
-        user.setTel(tel);
+    public UserInfoResponseDto updateInformationUser(UpdateUserRequestDto dto, HttpServletRequest req) throws InvalidUserException, UserNotFoundException {
+        User user = repository.findByDni(dto.getDni()).get();
+        if(user == null)
+            throw new UserNotFoundException(messageSource.getMessage("user.error.not.found.dni",null,Locale.getDefault()));
+        if(!isAdmin())
+            throw new InvalidUserException(messageSource.getMessage("user.error.not.authorization",null,Locale.getDefault()));
+        user.setTel(dto.getTel());
         return projectionFactory.createProjection(UserInfoResponseDto.class, repository.save(user));
     }
 
-    Boolean isAdmin(HttpServletRequest req){
+    @Override
+    public UserInfoResponseDto cambiarPwd(UpdatePwdRequestDto dto) throws UserNotFoundException{
+        if(!repository.findByEmail(dto.getEmail()).isPresent()){
+            throw new UserNotFoundException(messageSource.getMessage("user.error.not.exists",null,Locale.getDefault()));
+        }
+        User user = repository.findByEmail(dto.getEmail()).get();
+        if(!user.getDni().equals(dto.getDni())){
+            throw new UserNotFoundException(messageSource.getMessage("user.error.not.found.dni", null, Locale.getDefault()));
+        }
+        user.setPassword(encoder.encode(dto.getPassword()));
+        return projectionFactory.createProjection(UserInfoResponseDto.class, repository.save(user));
+    }
+
+    @Override
+    public Authorized checkLogin(HttpServletRequest req) {
+        Authorized auth = new Authorized();
+        User user = getUserByToken(req);
+        if(user == null){
+            auth.setAuth(true);
+            return auth;
+        }
+
+        return auth;
+    }
+
+    @Override
+    public RegisterResponseDto datosUser(InfoPersonaRequestDto dto) {
+        User user = repository.findByEmail(dto.getEmail()).get();
+        return projectionFactory.createProjection(RegisterResponseDto.class, user);
+    }
+
+    private Boolean isAdmin(){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth.getAuthorities().stream().anyMatch(r -> r.getAuthority().equals(ERole.ROLE_ADMIN.toString())))
             return true;
@@ -145,10 +179,16 @@ public class UserServiceImpl implements IUser, UserDetailsService{
     }
 
     private User getUserByToken(HttpServletRequest req){
-        JwtTokenFilter jwtFilter = new JwtTokenFilter();
-        JwtProvider jwtProvider = new JwtProvider();
-        String token = jwtFilter.getToken(req);
-        String username = jwtProvider.getNombreUsuarioFromToken(token);
-        return userRepository.findByEmail(username).get();
+        try {
+            System.out.println(req.getHeader("Authorization"));
+            JwtTokenFilter jwtFilter = new JwtTokenFilter();
+            JwtProvider jwtProvider = new JwtProvider();
+            String token = jwtFilter.getToken(req);
+            String username = jwtProvider.getNombreUsuarioFromToken(token);
+            return userRepository.findByEmail(username).get();
+        }catch (Exception e){
+            return null;
+        }
+
     }
 }

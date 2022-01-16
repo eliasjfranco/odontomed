@@ -1,5 +1,6 @@
 package com.odontomed.controller;
 
+import com.odontomed.dto.request.UpdateUserRequestDto;
 import com.odontomed.exception.InvalidUserException;
 import com.odontomed.exception.UserNotFoundException;
 import com.odontomed.service.Interface.IUser;
@@ -35,23 +36,14 @@ public class InfoPacienteController {
         }
     }
 
-    @PutMapping(path = "/{tel}")
-    public ResponseEntity<?> updateContact(@PathVariable("tel") String tel, HttpServletRequest req){
+    @PutMapping()
+    public ResponseEntity<?> updateContact(@RequestBody UpdateUserRequestDto dto, HttpServletRequest req){
         try{
-            return ResponseEntity.status(HttpStatus.OK).body(service.updateInformationUser(tel, req));
+            return ResponseEntity.status(HttpStatus.resolve(206)).body(service.updateInformationUser(dto, req));
         }catch (InvalidUserException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }catch (UserNotFoundException u){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(u.getMessage());
-        }
-    }
-
-    @DeleteMapping
-    public ResponseEntity<?> deleteInformacion(){
-        try{
-            return null;
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

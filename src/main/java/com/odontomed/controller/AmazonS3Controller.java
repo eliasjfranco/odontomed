@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/s3")
-public class AmazonS3 {
+public class AmazonS3Controller {
 
     @Autowired
     private IAmazon service;
@@ -35,6 +35,18 @@ public class AmazonS3 {
         InputStreamResource resource = new InputStreamResource(service.downloadFile(key));
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\""+key+"\"").body(resource);
     }
+
+    @GetMapping("/carousel")
+    public ResponseEntity<?> getImgsCarousel(){
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(service.getImgs());
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
 
 
 }

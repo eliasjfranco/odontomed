@@ -11,4 +11,7 @@ public class UpdateUserRequestDto {
 
     @NotBlank(message = "El campo Telefono no puede estar vacío")
     private String tel;
+
+    @NotBlank(message = "El campo DNI no puede estar vacío")
+    private String dni;
 }

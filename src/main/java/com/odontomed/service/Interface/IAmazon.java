@@ -12,4 +12,6 @@ public interface IAmazon {
     List<String> getObjectsFromS3();
 
     InputStream downloadFile(String key);
+
+    List<String> getImgs();
 }

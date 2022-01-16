@@ -24,6 +24,7 @@ public class JwtProvider {
     public String generateToken(Authentication authentication){
         UsuarioMain usuarioMain = (UsuarioMain) authentication.getPrincipal();
         return "Bearer " + Jwts.builder().setSubject(usuarioMain.getUsername())
+                .claim("name", usuarioMain.getFirstname())
                 //.setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime() + expiration * 1000))
                 .signWith(SignatureAlgorithm.HS512, secret)
@@ -40,15 +41,19 @@ public class JwtProvider {
             return true;
         }catch (MalformedJwtException e){
             logger.error("Token mal formado");
+            return false;
         }catch (UnsupportedJwtException e){
             logger.error("Token no soportado");
+            return false;
         }catch (ExpiredJwtException e){
             logger.error("Token expirado");
+            return false;
         }catch (IllegalArgumentException e){
             logger.error("Token vacio");
+            return false;
         }catch (SignatureException e){
             logger.error("Fallo con la firma");
+            return false;
         }
-        return false;
     }
 }

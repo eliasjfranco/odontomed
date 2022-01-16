@@ -59,4 +59,14 @@ public class AmazonServiceImpl implements IAmazon {
         S3Object object = amazonS3.getObject(bucket, key);
         return object.getObjectContent();
     }
+
+    @Override
+    public List<String> getImgs() {
+        ListObjectsV2Result result = amazonS3.listObjectsV2("https://odontomed.s3.sa-east-1.amazonaws.com/banner/");
+        List<S3ObjectSummary> objects = result.getObjectSummaries();
+        List<String> list = objects.stream().map(item -> {
+            return item.getKey();
+        }).collect(Collectors.toList());
+        return list;
+    }
 }
